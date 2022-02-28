@@ -1,0 +1,15 @@
+<h1>{{pgTitle}} Club Profile</h1>
+
+<div class="contentWrapper">
+    <ul>
+        <h2>Player list</h2>
+        <li *ngFor="let player of players">
+            <a routerLink="/player/{{player.id}}">{{player.name}}</a>
+        </li>
+    </ul>
+    <div class="center">
+        <input type="button" value="Add" (click)="addClub()">
+        <input type="button" value="Update" (click)="updateClub()">
+        <input type="button" value="Delete" (click)="deleteClub()">
+    </div>
+</div>

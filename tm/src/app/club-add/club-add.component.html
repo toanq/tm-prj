@@ -1,0 +1,16 @@
+<h1>Add Club</h1>
+
+<div class="contentWrapper">
+    <ul>
+        <li>Name: <input type="text" [(ngModel)]="clubName"></li>
+        <li>
+            Country: <select [(ngModel)]="currCountryId">
+                <option *ngFor="let country of countries" value="{{country.id}}">{{country.name}}</option>
+            </select>
+        </li>
+    </ul>
+    <div class="center">
+        <input type="button" value="Add" (click)="addClub()">
+        <input type="button" value="Cancel" (click)="cancelClub()">
+    </div>
+</div>

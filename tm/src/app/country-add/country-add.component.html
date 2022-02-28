@@ -1,0 +1,11 @@
+<h1>Add Country</h1>
+
+<div class="contentWrapper">
+    <ul>
+        <li>Name: <input type="text" #countryName></li>
+    </ul>
+    <div class="center">
+        <input type="button" value="Add" (click)="addCountry(countryName.value)">
+        <input type="button" value="Cancel" (click)="cancelCountry();">
+    </div>
+</div>

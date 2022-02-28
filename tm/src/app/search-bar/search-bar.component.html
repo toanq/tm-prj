@@ -1,0 +1,38 @@
+<div class="contentWrapper">
+  <div class="searchBarWrapper">
+    <input
+      #searchBar
+      class="searchBar"
+      [(ngModel)]="searchText"
+      placeholder="Search"
+      (keypress)="keyPress($event)"
+    >
+    <input type="button" value=">>" (click)="gotoSearch()">
+  </div>
+  <div class="searchButtonWrapper">
+    <div class="searchButton">
+      <select [(ngModel)]="menu.country" (change)="countryChange()">
+        <option disabled value="-1">Country</option>
+        <option *ngFor="let country of menu.countries" value={{country.id}}>{{country.name}}</option>
+      </select>
+      <a routerLink="country/add"><input type="button" value="+"></a>
+      <input type="button" value=">>" [disabled]="menu.country===-1" (click)="gotoCountryDetails(menu.country)">
+    </div>
+    <div class="searchButton">
+      <select [(ngModel)]="menu.club" (change)="clubChange()" [disabled]="menu.country===-1">
+        <option disabled value="-1">Club</option>
+        <option *ngFor="let club of menu.clubs" value={{club.id}}>{{club.name}}</option>
+      </select>
+      <a routerLink="club/add"><input type="button" value="+"></a>
+      <input type="button" value=">>" [disabled]="menu.club===-1" (click)="gotoClubDetails(menu.club)">
+    </div>
+    <div class="searchButton">
+      <select [(ngModel)]="menu.player" (change)="playerChange()" [disabled]="menu.club===-1">
+        <option disabled value="-1">Player</option>
+        <option *ngFor="let player of menu.players" value={{player.id}}>{{player.name}}</option>
+      </select>
+      <a routerLink="player/add"><input type="button" value="+"></a>
+      <input type="button" value=">>" [disabled]="menu.player==-1" (click)="gotoPlayerDetails(menu.player)">
+    </div>
+  </div>
+</div>

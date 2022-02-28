@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Users\Bee\Desktop\tm-server\bin\Release\net5.0\publish\</_PublishTargetUrl>
+    <History>True|2022-02-17T02:20:09.4459202Z;True|2022-02-17T09:18:09.6098194+07:00;True|2022-02-17T09:10:19.7788460+07:00;True|2022-02-17T09:06:26.7205257+07:00;True|2022-02-17T09:00:22.7983646+07:00;</History>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+  </PropertyGroup>
+</Project>

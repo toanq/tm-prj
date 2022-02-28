@@ -1,0 +1,18 @@
+<h1>Search results</h1>
+
+<div class="contentWrapper">
+    <ul>
+        <h2>Players</h2>
+        <li *ngFor="let player of players">
+           <a routerLink="/player/{{player.id}}">{{player.name}} </a>
+        </li>
+        <span *ngIf="!players || players.length == 0">Not found!</span>
+    </ul>
+    <ul>
+        <h2>Clubs</h2>
+        <li *ngFor="let club of clubs">
+            <a routerLink="/club/{{club.id}}">{{club.name}}</a> 
+        </li>
+        <span *ngIf="!clubs || clubs.length == 0">Not found!</span>
+    </ul>
+</div>

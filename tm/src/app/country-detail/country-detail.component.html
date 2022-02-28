@@ -1,0 +1,15 @@
+<h1>{{ pgTitle }} Country Profile</h1>
+
+<div class="contentWrapper">
+    <ul>
+        <h2>Club list</h2>
+        <li *ngFor="let club of clubs">
+            <a routerLink="/club/{{club.id}}">{{club.name}}</a>
+        </li>
+    </ul>
+    <div class="center">
+        <input type="button" value="Add" (click)="addCountry()">
+        <input type="button" value="Update" (click)="updateCountry()">
+        <input type="button" value="Delete" (click)="deleteCountry()">
+    </div>
+</div>

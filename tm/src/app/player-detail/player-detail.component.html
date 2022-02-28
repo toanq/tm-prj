@@ -1,0 +1,18 @@
+<h1>Player Profile</h1>
+
+<div class="contentWrapper">
+    <ul *ngIf="player">
+        <li>ID: {{player.id}}</li>
+        <li>Name: {{player.name}}</li>
+        <li>Club: {{clubName}}</li>
+        <li>Nation: {{countryName}}</li>
+        <li>Height: {{player.height}}m</li>
+        <li>Position: {{player.position}}</li>
+    </ul>
+    
+    <div class="center">
+        <input type="button" value="Add" (click)="addPlayer()">
+        <input type="button" value="Update" (click)="updatePlayer()">
+        <input type="button" value="Delete" (click)="deletePlayer()">
+    </div>
+</div>

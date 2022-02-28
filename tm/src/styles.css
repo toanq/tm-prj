@@ -1,0 +1,114 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #398AB9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.bg-title {
+    background-color: #D8D2CB;
+}
+
+.searchBarWrapper {
+    text-align: center;
+}
+
+.searchBar {
+    width: 90%;
+    height: 1.8em;
+    font-size: 1.1em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+.searchBarWrapper > input[type=button] {
+    width: 50px;
+    height: 1.8em;
+    margin-left: -60px;
+    display: inline;
+}
+
+.searchButtonWrapper {
+    text-align: center;
+}
+
+.searchButton {
+    display: inline-block;
+    height: 1.8em;
+    font-size: 1.1em;
+    margin: 0.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+.searchButton > select, input {
+    height: 100%;
+    margin: 2px;
+    color: #1C658C;
+    font-size: 0.8em;
+}
+
+.contentWrapper {
+    padding-left: 15%;
+    padding-right: 15%;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 0;
+    padding-top: 0.54em;
+    color: #EEEEEE;
+}
+
+h2 {
+    color: #D8D2CB;
+}
+
+.title, .title > a {
+    cursor: pointer;
+    text-decoration: none!important;
+    color: #1C658C;
+}
+
+.center {
+    text-align: center;
+}
+
+input, option {
+    border-radius: 0.25rem;
+    border: none;
+    width: auto;
+}
+
+.searchButton > select {
+    width: 80px;
+}
+
+input[type="button"] {
+    min-width: 40px;
+    overflow: visible;
+    background-color: #EEEEEE;
+    font-size: 0.8em;
+}
+
+li {
+    margin: 10px;
+    font-size: 1.1em;
+    list-style-type: disc;
+    color: #EEEEEE;
+}
+
+li > a {
+    cursor: pointer;
+    text-decoration: none!important;
+    color: #EEEEEE;
+}
+
+.contentWrapper > .center {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    left: 0;
+}

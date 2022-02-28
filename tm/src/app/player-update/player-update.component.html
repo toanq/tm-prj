@@ -1,0 +1,24 @@
+<h1>Update Player</h1>
+
+<div class="contentWrapper">
+    <ul *ngIf="currPlayer">
+        <li>Name: <input type="text" [(ngModel)]="currPlayer.name"></li>
+        <li>
+            Club: <select [(ngModel)]="currPlayer.clubId">
+                <option *ngFor="let club of clubs" value="{{club.id}}">{{club.name}}</option>
+            </select>
+        </li>
+        <li>
+            Nation: <select [(ngModel)]="currPlayer.nation">
+                <option *ngFor="let country of countries" value="{{country.id}}">{{country.name}}</option>
+            </select>
+        </li>
+        <li>Height: <input type="text" [(ngModel)]="currPlayer.height">m</li>
+        <li>Position: <input type="text" [(ngModel)]="currPlayer.position"></li>
+    </ul>
+    
+    <div class="center">
+        <input type="button" value="Save" (click)="updatePlayer()">
+        <input type="button" value="Cancel" (click)="cancelPlayer()">
+    </div>
+</div>
