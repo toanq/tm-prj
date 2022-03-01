@@ -10857,19 +10857,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Bee\\.nuget\\packages\\": {}
+    "C:\\Users\\ToanNguyen\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Workplace\\tm-server\\tm-server.csproj",
+      "projectUniqueName": "D:\\Workplace\\tm-prj\\tm-server\\tm-server.csproj",
       "projectName": "tm-server",
-      "projectPath": "D:\\Workplace\\tm-server\\tm-server.csproj",
-      "packagesPath": "C:\\Users\\Bee\\.nuget\\packages\\",
-      "outputPath": "D:\\Workplace\\tm-server\\obj\\",
+      "projectPath": "D:\\Workplace\\tm-prj\\tm-server\\tm-server.csproj",
+      "packagesPath": "C:\\Users\\ToanNguyen\\.nuget\\packages\\",
+      "outputPath": "D:\\Workplace\\tm-prj\\tm-server\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Bee\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\ToanNguyen\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
