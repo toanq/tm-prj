@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace tm_server.Models
 {
-    public class TMContext : IdentityDbContext
+    public class TMContext : DbContext
     {
         public TMContext(DbContextOptions<TMContext> options) : base(options)
         {
