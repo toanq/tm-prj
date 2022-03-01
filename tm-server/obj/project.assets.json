@@ -158,6 +158,21 @@
           "lib/netstandard2.0/Microsoft.AspNetCore.Authentication.Core.dll": {}
         }
       },
+      "Microsoft.AspNetCore.Authentication.JwtBearer/5.0.14": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.IdentityModel.Protocols.OpenIdConnect": "6.7.1"
+        },
+        "compile": {
+          "lib/net5.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll": {}
+        },
+        "runtime": {
+          "lib/net5.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll": {}
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "Microsoft.AspNetCore.Cryptography.Internal/6.0.2": {
         "type": "package",
         "compile": {
@@ -3818,6 +3833,21 @@
         "lib/netstandard2.0/Microsoft.AspNetCore.Authentication.Core.xml",
         "microsoft.aspnetcore.authentication.core.2.2.0.nupkg.sha512",
         "microsoft.aspnetcore.authentication.core.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.Authentication.JwtBearer/5.0.14": {
+      "sha512": "n718JBDXLCMGx0KZvC/xHt98fao70mAKjEMjElYNrFwEqTL58foajV1pJpGpg7QZwfMNtmf4wPrDYnK8KdsV6Q==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.authentication.jwtbearer/5.0.14",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net5.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll",
+        "lib/net5.0/Microsoft.AspNetCore.Authentication.JwtBearer.xml",
+        "microsoft.aspnetcore.authentication.jwtbearer.5.0.14.nupkg.sha512",
+        "microsoft.aspnetcore.authentication.jwtbearer.nuspec"
       ]
     },
     "Microsoft.AspNetCore.Cryptography.Internal/6.0.2": {
@@ -10844,6 +10874,7 @@
   },
   "projectFileDependencyGroups": {
     "net6.0": [
+      "Microsoft.AspNetCore.Authentication.JwtBearer >= 5.0.14",
       "Microsoft.AspNetCore.Identity >= 2.2.0",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 6.0.2",
       "Microsoft.AspNetCore.Identity.UI >= 6.0.2",
@@ -10857,19 +10888,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Bee\\.nuget\\packages\\": {}
+    "C:\\Users\\ToanNguyen\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Workplace\\tm-server\\tm-server.csproj",
+      "projectUniqueName": "D:\\Workplace\\tm-prj\\tm-server\\tm-server.csproj",
       "projectName": "tm-server",
-      "projectPath": "D:\\Workplace\\tm-server\\tm-server.csproj",
-      "packagesPath": "C:\\Users\\Bee\\.nuget\\packages\\",
-      "outputPath": "D:\\Workplace\\tm-server\\obj\\",
+      "projectPath": "D:\\Workplace\\tm-prj\\tm-server\\tm-server.csproj",
+      "packagesPath": "C:\\Users\\ToanNguyen\\.nuget\\packages\\",
+      "outputPath": "D:\\Workplace\\tm-prj\\tm-server\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Bee\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\ToanNguyen\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -10895,6 +10926,10 @@
       "net6.0": {
         "targetAlias": "net6.0",
         "dependencies": {
+          "Microsoft.AspNetCore.Authentication.JwtBearer": {
+            "target": "Package",
+            "version": "[5.0.14, )"
+          },
           "Microsoft.AspNetCore.Identity": {
             "target": "Package",
             "version": "[2.2.0, )"

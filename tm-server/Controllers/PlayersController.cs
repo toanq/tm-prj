@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,18 +22,8 @@ namespace tm_server.Controllers
 
         // GET: api/Players
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Player>>> GetPlayers(
-            [FromQuery(Name = "clubId")] long ClubId,
-            [FromQuery(Name = "name")] string Name
-        )
+        public async Task<ActionResult<IEnumerable<Player>>> GetPlayers()
         {
-            if (ClubId != 0) // GET: api/Players?clubId=123
-                return await _context.Players.Where<Player>(player => player.ClubId == ClubId).ToListAsync();
-            if (Name != null && Name.Length > 0)
-            {
-                //Regex pattern = new Regex(Name);
-                return await _context.Players.Where<Player>(player => player.Name.Contains(Name)).ToListAsync();
-            }
             return await _context.Players.ToListAsync();
         }
 

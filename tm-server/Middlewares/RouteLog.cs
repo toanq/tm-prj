@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 
 namespace tm_server.Middlewares
 {
-    public class Test
+    public class RouteLog
     {
         private readonly RequestDelegate _next;
-        public Test(RequestDelegate next)
+        public RouteLog(RequestDelegate next)
         {
             _next = next;
         }
@@ -15,7 +15,7 @@ namespace tm_server.Middlewares
         public async Task InvokeAsync(HttpContext context)
         {
             Console.WriteLine($"{context.Request.Method} {context.Request.Path}");
-            context.Response.Headers.Add("Test", "success");
+            context.Response.Headers.Add("Test-middleware", "success");
             await _next(context);
         }
     }

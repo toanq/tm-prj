@@ -12,6 +12,10 @@ using System.IO;
 using tm_server.Middlewares;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Threading.Tasks;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace tm_server
 {
@@ -22,25 +26,17 @@ namespace tm_server
             Configuration = configuration;
         }
 
-        private string corsWhitelist = "corsWhitelist";
+        private readonly string corsWhitelist = "corsWhitelist";
 
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            /*
-            services.AddDbContext<TMContext>(opt => {
-                opt.UseInMemoryDatabase("TMDB");
-            });
-            */
             services.AddDbContext<TMContext>(options => {
                 string connectionString = Configuration.GetConnectionString("DefaultConnection");
-                options.UseMySQL(connectionString);
+                options.UseSqlServer(connectionString);
             });
-            services.AddIdentity<AppUser, IdentityRole>()
-                .AddEntityFrameworkStores<TMContext>()
-                .AddDefaultTokenProviders();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -54,6 +50,24 @@ namespace tm_server
                     builder.WithOrigins("http://nqtoan.ddns.net");
                 }
             ));
+
+            string keyString = Configuration.GetSection("AppSettings").GetValue<string>("SecretKey");
+            byte[] key = Encoding.ASCII.GetBytes(keyString);
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,7 +86,7 @@ namespace tm_server
             }
             app.UseCors(this.corsWhitelist);
             
-            app.UseMiddleware<Test>();
+            app.UseMiddleware<RouteLog>();
             
             app.Use(async (context, next) =>
             {
