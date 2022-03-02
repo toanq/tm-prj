@@ -8,20 +8,18 @@ namespace tm_server.Authorization
     public class JwtMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IUserService _userService;
-        public JwtMiddleware(RequestDelegate next, IUserService userService)
+        public JwtMiddleware(RequestDelegate next)
         {
             _next = next;
-            _userService = userService;
         }
 
-        public async Task Invoke(HttpContext context, IJwtUtils jwtUtils)
+        public async Task InvokeAsync(HttpContext context, IJwtUtils jwtUtils, IUserService userService)
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
             var userId = jwtUtils.ValidateToken(token);
             if (userId != null)
             {
-                context.Items["User"] = _userService.GetUserById(userId);
+                context.Items["User"] = userService.GetById(userId);
             }
 
             await _next(context);

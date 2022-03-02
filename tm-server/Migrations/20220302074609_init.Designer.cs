@@ -12,7 +12,7 @@ using tm_server.Models;
 namespace tm_server.Migrations
 {
     [DbContext(typeof(TMContext))]
-    [Migration("20220302031046_init")]
+    [Migration("20220302074609_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -191,9 +191,6 @@ namespace tm_server.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordSalt")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")

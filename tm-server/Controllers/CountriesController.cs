@@ -45,7 +45,6 @@ namespace tm_server.Controllers
         // PUT: api/Countries/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize]
-        [Microsoft.AspNetCore.Authorization.Authorize()]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCountry(long id, Country country)
         {

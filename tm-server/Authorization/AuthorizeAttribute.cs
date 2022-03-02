@@ -23,9 +23,9 @@ namespace tm_server.Authorization
             if (allowAnonymous) return;
 
             var user = (AppUser)context.HttpContext.Items["User"];
-            if (user == null || (_roles.Any() && _roles.Contains(user.Role)) )
+            if (user == null || (_roles.Any() && !_roles.Contains(user.Role)) )
             {
-                context.Result = new JsonResult(new { message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized };
+                context.Result = new JsonResult(new { message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized};
             }
 
         }

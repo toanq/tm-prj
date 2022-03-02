@@ -77,9 +77,10 @@ namespace tm_server
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<TMContext>();
+                var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
                 context.Database.EnsureDeleted();
                 context.Database.Migrate();
-                AddTestData(context);
+                AddTestData(context, userService);
             }
 
             if (true || env.IsDevelopment())
@@ -91,7 +92,8 @@ namespace tm_server
             app.UseCors(this.corsWhitelist);
             
             app.UseMiddleware<RouteLog>();
-            
+            app.UseMiddleware<JwtMiddleware>();
+
             app.Use(async (context, next) =>
             {
                 await next();
@@ -119,29 +121,22 @@ namespace tm_server
             });
         }
 
-        private static void AddTestData(TMContext context)
+        private static void AddTestData(TMContext context, IUserService userService)
         {
+            var CreateUser = userService.Create;
             context.Users.AddRange(new[]
             {
                 CreateUser("admin", "admin", Role.Admin),
-                CreateUser("user", "user"),
-                CreateUser("test", "test")
+                CreateUser("user", "user", Role.User),
+                CreateUser("test", "test", Role.User)
+            });
+
+            context.Countries.AddRange(new[] {
+                new Country { Name = "VietNam" },
+                new Country { Name = "China" },
+                new Country { Name = "England"},
             });
             context.SaveChanges();
-        }
-
-        private static AppUser CreateUser(string username, string password, Role role = Role.User)
-        {
-            using var hmac = new System.Security.Cryptography.HMACSHA256();
-            byte[] abPwd = hmac.ComputeHash(Encoding.ASCII.GetBytes(password));
-            var usr = new AppUser
-            {
-                UserName = username,
-                PasswordSalt = Convert.ToBase64String(hmac.Key),
-                PasswordHash = Convert.ToBase64String(hmac.ComputeHash(abPwd)),
-                Role = role
-            };
-            return usr;
         }
 
         private static void AddAngularStatics(IApplicationBuilder app, IWebHostEnvironment env, string StaticPath)

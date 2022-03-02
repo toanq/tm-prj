@@ -13,14 +13,16 @@ namespace tm_server.Authorization
     public interface IJwtUtils
     {
         string GenerateToken(AppUser usr);
-        string? ValidateToken(string token);
+        string ValidateToken(string token);
     }
     public class JwtUtils : IJwtUtils
     {
         private readonly IConfiguration _config;
-        public JwtUtils(IConfiguration configuration)
+        private readonly TMContext _context;
+        public JwtUtils(IConfiguration configuration, TMContext context)
         {
             _config = configuration;
+            _context = context;
         }
         public string GenerateToken(AppUser usr)
         {
@@ -40,7 +42,7 @@ namespace tm_server.Authorization
             return tokenHandler.WriteToken(token);
         }
 
-        public string? ValidateToken(string token)
+        public string ValidateToken(string token)
         {
             if (token == null) return null;
             string keyString = _config.GetSection("AppSettings").GetValue<string>("SecretKey");
@@ -57,7 +59,8 @@ namespace tm_server.Authorization
                 };
                 tokenHandler.ValidateToken(token, tokenValidationParams, out SecurityToken validatedToken);
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                string userId = jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value;
+                string username = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
+                string userId = (from x in _context.Users where x.UserName == username select x.Id).FirstOrDefault();
                 return userId;
             } catch
             {
