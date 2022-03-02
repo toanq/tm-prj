@@ -12,7 +12,7 @@ namespace tm_server.Middlewares
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task Invoke(HttpContext context)
         {
             Console.WriteLine($"{context.Request.Method} {context.Request.Path}");
             context.Response.Headers.Add("Test-middleware", "success");

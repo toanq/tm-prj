@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,7 @@ namespace tm_server.Controllers
 
         // PUT: api/Clubs/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutClub(long id, Club club)
         {
@@ -74,6 +76,7 @@ namespace tm_server.Controllers
 
         // POST: api/Clubs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Club>> PostClub(Club club)
         {
@@ -84,6 +87,7 @@ namespace tm_server.Controllers
         }
 
         // DELETE: api/Clubs/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteClub(long id)
         {

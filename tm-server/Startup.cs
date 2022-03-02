@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using tm_server.Authorization;
+using tm_server.Services;
 
 namespace tm_server
 {
@@ -33,11 +35,7 @@ namespace tm_server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<TMContext>(options => {
-                string connectionString = Configuration.GetConnectionString("DefaultConnection");
-                options.UseSqlServer(connectionString);
-            });
-
+            services.AddDbContext<TMContext>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -68,16 +66,23 @@ namespace tm_server
                     ValidateAudience = false
                 };
             });
+
+            services.AddScoped<IJwtUtils, JwtUtils>();
+            services.AddScoped<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            /*using (var scope = app.ApplicationServices.CreateScope())
+            using (var scope = app.ApplicationServices.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<TMContext>();
-                //AddTestData(context);
-            }*/
+                var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                context.Database.EnsureDeleted();
+                context.Database.Migrate();
+                AddTestData(context, userService);
+            }
+
             if (true || env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -87,7 +92,8 @@ namespace tm_server
             app.UseCors(this.corsWhitelist);
             
             app.UseMiddleware<RouteLog>();
-            
+            app.UseMiddleware<JwtMiddleware>();
+
             app.Use(async (context, next) =>
             {
                 await next();
@@ -115,15 +121,23 @@ namespace tm_server
             });
         }
 
-/*        private static void AddTestData(TMContext context)
+        private static void AddTestData(TMContext context, IUserService userService)
         {
-            context.Countries.Add(new Country
+            var CreateUser = userService.Create;
+            context.Users.AddRange(new[]
             {
-                Id = 100,
-                Name = "Vietnam"
+                CreateUser("admin", "admin", Role.Admin),
+                CreateUser("user", "user", Role.User),
+                CreateUser("test", "test", Role.User)
+            });
+
+            context.Countries.AddRange(new[] {
+                new Country { Name = "VietNam" },
+                new Country { Name = "China" },
+                new Country { Name = "England"},
             });
             context.SaveChanges();
-        }*/
+        }
 
         private static void AddAngularStatics(IApplicationBuilder app, IWebHostEnvironment env, string StaticPath)
         {
