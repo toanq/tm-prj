@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using tm_server.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,8 @@ namespace tm_server.Controllers
 
         // PUT: api/Countries/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
+        [Microsoft.AspNetCore.Authorization.Authorize()]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCountry(long id, Country country)
         {
@@ -74,6 +77,7 @@ namespace tm_server.Controllers
 
         // POST: api/Countries
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Country>> PostCountry(Country country)
         {
@@ -84,6 +88,7 @@ namespace tm_server.Controllers
         }
 
         // DELETE: api/Countries/5
+        [Authorize(Role.Admin)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCountry(long id)
         {

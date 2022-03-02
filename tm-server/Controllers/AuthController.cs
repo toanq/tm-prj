@@ -65,8 +65,8 @@ namespace tm_server.Controllers
         [AllowAnonymous]
         public IActionResult Post([FromBody] UserLogin user)
         {
-            user.Print();
-            if (user.Username == "string" && user.Password == "string")
+            //user.Print();
+            if (user.Username == "admin" && user.Password == "admin")
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var tokenDescriptor = new SecurityTokenDescriptor

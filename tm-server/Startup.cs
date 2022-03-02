@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using tm_server.Authorization;
+using tm_server.Services;
 
 namespace tm_server
 {
@@ -33,11 +35,7 @@ namespace tm_server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<TMContext>(options => {
-                string connectionString = Configuration.GetConnectionString("DefaultConnection");
-                options.UseSqlServer(connectionString);
-            });
-
+            services.AddDbContext<TMContext>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -68,16 +66,22 @@ namespace tm_server
                     ValidateAudience = false
                 };
             });
+
+            services.AddScoped<IJwtUtils, JwtUtils>();
+            services.AddScoped<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            /*using (var scope = app.ApplicationServices.CreateScope())
+            using (var scope = app.ApplicationServices.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<TMContext>();
-                //AddTestData(context);
-            }*/
+                context.Database.EnsureDeleted();
+                context.Database.Migrate();
+                AddTestData(context);
+            }
+
             if (true || env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -115,15 +119,30 @@ namespace tm_server
             });
         }
 
-/*        private static void AddTestData(TMContext context)
+        private static void AddTestData(TMContext context)
         {
-            context.Countries.Add(new Country
+            context.Users.AddRange(new[]
             {
-                Id = 100,
-                Name = "Vietnam"
+                CreateUser("admin", "admin", Role.Admin),
+                CreateUser("user", "user"),
+                CreateUser("test", "test")
             });
             context.SaveChanges();
-        }*/
+        }
+
+        private static AppUser CreateUser(string username, string password, Role role = Role.User)
+        {
+            using var hmac = new System.Security.Cryptography.HMACSHA256();
+            byte[] abPwd = hmac.ComputeHash(Encoding.ASCII.GetBytes(password));
+            var usr = new AppUser
+            {
+                UserName = username,
+                PasswordSalt = Convert.ToBase64String(hmac.Key),
+                PasswordHash = Convert.ToBase64String(hmac.ComputeHash(abPwd)),
+                Role = role
+            };
+            return usr;
+        }
 
         private static void AddAngularStatics(IApplicationBuilder app, IWebHostEnvironment env, string StaticPath)
         {
