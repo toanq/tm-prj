@@ -24,6 +24,19 @@ namespace tm_server.Models
             options.UseSqlServer(connectionString);
         }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                var tableName = entityType.GetTableName();
+                if (tableName.Contains("AspNet"))
+                {
+                    entityType.SetTableName(tableName.Substring(6));
+                }
+            }
+        }
+
         public DbSet<Country> Countries { get; set; }
         public DbSet<Club> Clubs { get; set; }
         public DbSet<Player> Players { get; set; }
