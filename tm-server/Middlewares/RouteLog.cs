@@ -15,7 +15,7 @@ namespace tm_server.Middlewares
         public async Task Invoke(HttpContext context)
         {
             Console.WriteLine($"{context.Request.Method} {context.Request.Path}");
-            context.Response.Headers.Add("Test-middleware", "success");
+            //context.Response.Headers.Add("Test-middleware", "success");
             await _next(context);
         }
     }

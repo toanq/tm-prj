@@ -1,14 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using tm_server.Models;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -24,7 +16,8 @@ namespace tm_server.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         public AuthController(
             UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager) {
+            SignInManager<AppUser> signInManager)
+        {
             _userManager = userManager;
             _signInManager = signInManager;
         }
@@ -33,11 +26,12 @@ namespace tm_server.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            if(_signInManager.IsSignedIn(User))
+            if (_signInManager.IsSignedIn(User))
             {
                 var currUsr = await _userManager.GetUserAsync(User);
                 return Ok(currUsr);
-            } else
+            }
+            else
                 return BadRequest(new { Message = "Unauthrozied" });
         }
 
@@ -55,9 +49,14 @@ namespace tm_server.Controllers
                     Message = "Login success",
                     user.UserName
                 });
-            } else
+            }
+            else if (signIn.IsLockedOut)
             {
-                return BadRequest(new { Message = "Username or password is incorrect"});
+                return BadRequest(new { Message = "Out of tries, your account is locked" });
+            }
+            else
+            {
+                return BadRequest(new { Message = "Username or password is incorrect" });
             }
         }
 
@@ -77,12 +76,13 @@ namespace tm_server.Controllers
             {
                 await _signInManager.SignInAsync(newUser, isPersistent: true);
                 return Ok(user);
-            } else
+            }
+            else
             {
                 await _signInManager.SignOutAsync();
                 return BadRequest(result.Errors);
             }
-            
+
         }
 
         [HttpGet]

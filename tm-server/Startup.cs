@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System;
 using System.IO;
-using System.Text;
+using System.Threading.Tasks;
 using tm_server.Middlewares;
 using tm_server.Models;
 
@@ -41,14 +44,16 @@ namespace tm_server
             {
                 options.Cookie.Name = "Merlin";
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                options.Events.OnRedirectToAccessDenied = new Func<RedirectContext<CookieAuthenticationOptions>, Task>(context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return context.Response.CompleteAsync();
+                });
             });
 
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<TMContext>()
                 .AddDefaultTokenProviders();
-            services.Configure<IdentityOptions>(options =>
-            {
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,10 +63,10 @@ namespace tm_server
             {
                 var context = scope.ServiceProvider.GetRequiredService<TMContext>();
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
                 context.Database.EnsureDeleted();
                 context.Database.Migrate();
-                AddTestData(context, userManager);
+                AddTestData(context, userManager, roleManager);
             }
 
             if (true || env.IsDevelopment())
@@ -79,6 +84,14 @@ namespace tm_server
 
             app.UseMiddleware<RouteLog>();
 
+            app.UseRouting();
+
+            app.UseAuthentication();
+
+            app.UseAuthorization();
+
+            //app.UseHttpsRedirection();
+
             app.Use(async (context, next) =>
             {
                 await next();
@@ -86,19 +99,14 @@ namespace tm_server
                 {
                     /*context.Request.Path = "/index.html";*/
                     //await next();
-                    await context.Response.WriteAsync("");
+                    await context.Response.CompleteAsync();
                 }
             });
 
             AddAngularStatics(app, env, "Views");
 
-            //app.UseHttpsRedirection();
 
-            app.UseRouting();
 
-            app.UseAuthentication();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
@@ -106,10 +114,18 @@ namespace tm_server
             });
         }
 
-        private static void AddTestData(TMContext context, UserManager<AppUser> userManager)
+        private static void AddTestData(TMContext context, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            userManager.CreateAsync(new AppUser { UserName = "admin" }, "Admin@123").Wait();
-            userManager.CreateAsync(new AppUser { UserName = "user" }, "User@123").Wait();
+            roleManager.CreateAsync(new IdentityRole { Name = "Administrator" }).Wait();
+            roleManager.CreateAsync(new IdentityRole { Name = "User" }).Wait();
+
+            var currUsr = new AppUser { UserName = "admin" };
+            userManager.CreateAsync(currUsr, "Admin@123").Wait();
+            userManager.AddToRolesAsync(currUsr, new[] { "Administrator", "User" }).Wait();
+
+            currUsr = new AppUser { UserName = "user" };
+            userManager.CreateAsync(currUsr, "User@123").Wait();
+            userManager.AddToRolesAsync(currUsr, new[] { "User" }).Wait();
 
             context.Countries.AddRange(new[] {
                 new Country { Name = "VietNam" },
