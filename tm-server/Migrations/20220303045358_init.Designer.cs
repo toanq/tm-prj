@@ -12,7 +12,7 @@ using tm_server.Models;
 namespace tm_server.Migrations
 {
     [DbContext(typeof(TMContext))]
-    [Migration("20220302095848_init")]
+    [Migration("20220303045358_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -198,9 +198,6 @@ namespace tm_server.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");

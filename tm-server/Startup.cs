@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -8,16 +7,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using tm_server.Authorization;
 using tm_server.Middlewares;
 using tm_server.Models;
-using tm_server.Services;
 
 namespace tm_server
 {
@@ -41,26 +36,13 @@ namespace tm_server
             });
             services.AddCors();
 
-            string keyString = Configuration.GetSection("AppSettings").GetValue<string>("SecretKey");
-            byte[] key = Encoding.ASCII.GetBytes(keyString);
-            services.AddAuthentication(options =>
+            services.AddAuthentication();
+            services.ConfigureApplicationCookie(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
+                options.Cookie.Name = "Merlin";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             });
 
-            services.AddScoped<IJwtUtils, JwtUtils>();
-            services.AddScoped<IUserService, UserService>();
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<TMContext>()
                 .AddDefaultTokenProviders();
@@ -75,11 +57,11 @@ namespace tm_server
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<TMContext>();
-                var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
 
                 context.Database.EnsureDeleted();
                 context.Database.Migrate();
-                AddTestData(context, userService);
+                AddTestData(context, userManager);
             }
 
             if (true || env.IsDevelopment())
@@ -96,7 +78,6 @@ namespace tm_server
             });
 
             app.UseMiddleware<RouteLog>();
-            app.UseMiddleware<JwtMiddleware>();
 
             app.Use(async (context, next) =>
             {
@@ -125,15 +106,10 @@ namespace tm_server
             });
         }
 
-        private static void AddTestData(TMContext context, IUserService userService)
+        private static void AddTestData(TMContext context, UserManager<AppUser> userManager)
         {
-            var CreateUser = userService.Create;
-            context.Users.AddRange(new[]
-            {
-                CreateUser("admin", "admin", Role.Admin),
-                CreateUser("user", "user", Role.User),
-                CreateUser("test", "test", Role.User)
-            });
+            userManager.CreateAsync(new AppUser { UserName = "admin" }, "Admin@123").Wait();
+            userManager.CreateAsync(new AppUser { UserName = "user" }, "User@123").Wait();
 
             context.Countries.AddRange(new[] {
                 new Country { Name = "VietNam" },

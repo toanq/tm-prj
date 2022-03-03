@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -8,9 +9,8 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using tm_server.Models;
-using tm_server.Services;
-
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace tm_server.Controllers
@@ -20,86 +20,77 @@ namespace tm_server.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly IUserService _userService;
-        private readonly TMContext _context;
-        private readonly byte[] key;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
         public AuthController(
-            IConfiguration configuration,
-            IUserService userService,
-            TMContext context) {
-            _configuration = configuration;
-            _userService = userService;
-            _context = context;
-            string keyString = _configuration.GetSection("AppSettings").GetValue<string>("SecretKey");
-            key = Encoding.ASCII.GetBytes(keyString);
+            UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager) {
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         // GET: api/auth
         [HttpGet]
-        public IActionResult Get([FromHeader] string authorization)
+        public async Task<IActionResult> Get()
         {
-            if(AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            if(_signInManager.IsSignedIn(User))
             {
-                TokenValidationParameters tokenValidationParams = new()
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
-
-                //string scheme = headerValue.Scheme;
-                string parameter = headerValue.Parameter;
-                var tokenHandler = new JwtSecurityTokenHandler();
-                tokenHandler.ValidateToken(parameter, tokenValidationParams, out SecurityToken validatedToken);
-                long timeLeft = (long) (validatedToken.ValidTo - System.DateTime.UtcNow).TotalSeconds;
-                var jwtToken = (JwtSecurityToken)validatedToken;
-                string username = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
-                AppUser user = (from x in _context.Users where x.UserName == username select x).FirstOrDefault();
-                return Ok(new
-                {
-                    Message = "Authentication success",
-                    TimeLeft = timeLeft,
-                    Role = user.Role
-                });
+                var currUsr = await _userManager.GetUserAsync(User);
+                return Ok(currUsr);
             } else
-            {
-                return BadRequest();
-            }
+                return BadRequest(new { Message = "Unauthrozied" });
         }
 
         // POST api/auth
 
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult Post([FromBody] UserLogin user)
+        public async Task<IActionResult> LoginAsync([FromBody] UserLogin user)
         {
-            //user.Print();
-            if (_userService.Validate(user.Username, user.Password))
+            var signIn = await _signInManager.PasswordSignInAsync(user.UserName, user.Password, true, true);
+            if (signIn.Succeeded)
             {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(new Claim[]
-                    {
-                        new Claim(ClaimTypes.Name, user.Username)
-                    }),
-                    Expires = DateTime.UtcNow.AddMinutes(30),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-                };
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                var tokenString = tokenHandler.WriteToken(token);
                 return Ok(new
                 {
-                    user.Username,
-                    user.Password,
-                    Token = tokenString
+                    Message = "Login success",
+                    user.UserName
                 });
             } else
             {
-                return BadRequest(new { Message = "Username or password is incorrect" });
+                return BadRequest(new { Message = "Username or password is incorrect"});
             }
+        }
+
+        [HttpPost]
+        [Route("reg")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] UserRegister user)
+        {
+            var newUser = new AppUser
+            {
+                UserName = user.UserName,
+                Email = user.Email
+            };
+
+            var result = await _userManager.CreateAsync(newUser, user.Password);
+            if (result.Succeeded)
+            {
+                await _signInManager.SignInAsync(newUser, isPersistent: true);
+                return Ok(user);
+            } else
+            {
+                await _signInManager.SignOutAsync();
+                return BadRequest(result.Errors);
+            }
+            
+        }
+
+        [HttpGet]
+        [Route("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return NoContent();
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using tm_server.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -87,7 +87,7 @@ namespace tm_server.Controllers
         }
 
         // DELETE: api/Countries/5
-        [Authorize(Role.Admin)]
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCountry(long id)
         {
