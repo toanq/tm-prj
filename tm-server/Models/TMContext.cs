@@ -32,7 +32,7 @@ namespace tm_server.Models
                 var tableName = entityType.GetTableName();
                 if (tableName.Contains("AspNet"))
                 {
-                    entityType.SetTableName(tableName.Substring(6));
+                    entityType.SetTableName(tableName[6..]);
                 }
             }
         }

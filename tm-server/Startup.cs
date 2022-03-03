@@ -1,22 +1,22 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
-using System;
-using Microsoft.EntityFrameworkCore;
-using tm_server.Models;
-using Microsoft.Extensions.FileProviders;
-using System.IO;
-using tm_server.Middlewares;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using tm_server.Authorization;
+using tm_server.Middlewares;
+using tm_server.Models;
 using tm_server.Services;
 
 namespace tm_server
@@ -27,8 +27,6 @@ namespace tm_server
         {
             Configuration = configuration;
         }
-
-        private readonly string corsWhitelist = "corsWhitelist";
 
         public IConfiguration Configuration { get; }
 
@@ -41,13 +39,7 @@ namespace tm_server
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "tm_server", Version = "v1" });
             });
-            services.AddCors(options => options.AddPolicy(
-                name: this.corsWhitelist,
-                builder =>
-                {
-                    builder.WithOrigins("http://nqtoan.ddns.net");
-                }
-            ));
+            services.AddCors();
 
             string keyString = Configuration.GetSection("AppSettings").GetValue<string>("SecretKey");
             byte[] key = Encoding.ASCII.GetBytes(keyString);
@@ -69,6 +61,12 @@ namespace tm_server
 
             services.AddScoped<IJwtUtils, JwtUtils>();
             services.AddScoped<IUserService, UserService>();
+            services.AddIdentity<AppUser, IdentityRole>()
+                .AddEntityFrameworkStores<TMContext>()
+                .AddDefaultTokenProviders();
+            services.Configure<IdentityOptions>(options =>
+            {
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -78,6 +76,7 @@ namespace tm_server
             {
                 var context = scope.ServiceProvider.GetRequiredService<TMContext>();
                 var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+
                 context.Database.EnsureDeleted();
                 context.Database.Migrate();
                 AddTestData(context, userService);
@@ -89,8 +88,13 @@ namespace tm_server
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "tm_server v1"));
             }
-            app.UseCors(this.corsWhitelist);
-            
+            app.UseCors(builder =>
+            {
+                builder.AllowAnyOrigin();
+                builder.AllowAnyMethod();
+                builder.AllowAnyHeader();
+            });
+
             app.UseMiddleware<RouteLog>();
             app.UseMiddleware<JwtMiddleware>();
 
@@ -151,7 +155,8 @@ namespace tm_server
                 Console.WriteLine("      To use statics folder, create Views folder in content root directory");
                 return;
             }
-            else {
+            else
+            {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write("info: ");
                 Console.ResetColor();
@@ -159,16 +164,16 @@ namespace tm_server
             };
 
             var FileProvider = new PhysicalFileProvider(CombinedPath);
-/*            var options = new DefaultFilesOptions();
-            options.DefaultFileNames.Clear();
-            options.DefaultFileNames.Add("index.html");
-            options.FileProvider = FileProvider;
-            app.UseDefaultFiles(options);
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = FileProvider,
-                RequestPath = ""
-            });*/
+            /*            var options = new DefaultFilesOptions();
+                        options.DefaultFileNames.Clear();
+                        options.DefaultFileNames.Add("index.html");
+                        options.FileProvider = FileProvider;
+                        app.UseDefaultFiles(options);
+                        app.UseStaticFiles(new StaticFileOptions
+                        {
+                            FileProvider = FileProvider,
+                            RequestPath = ""
+                        });*/
 
             app.UseFileServer(new FileServerOptions
             {
