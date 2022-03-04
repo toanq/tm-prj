@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Threading.Tasks;
 using tm_server.Models;
+using tm_server.Services;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace tm_server.Controllers
@@ -12,27 +17,27 @@ namespace tm_server.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private readonly IJwtUtils _jwtUtils;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+
         public AuthController(
+            IJwtUtils jwtUtils,
             UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager)
+            SignInManager<AppUser> signInManager
+        )
         {
+            _jwtUtils = jwtUtils;
             _userManager = userManager;
             _signInManager = signInManager;
         }
 
         // GET: api/auth
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetUserInfo()
         {
-            if (_signInManager.IsSignedIn(User))
-            {
-                var currUsr = await _userManager.GetUserAsync(User);
-                return Ok(currUsr);
-            }
-            else
-                return BadRequest(new { Message = "Unauthrozied" });
+            var currUsr = await _userManager.GetUserAsync(User);
+            return Ok(currUsr);
         }
 
         // POST api/auth
@@ -41,23 +46,22 @@ namespace tm_server.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> LoginAsync([FromBody] UserLogin user)
         {
-            var signIn = await _signInManager.PasswordSignInAsync(user.UserName, user.Password, true, true);
-            if (signIn.Succeeded)
+            var currUsr = await _userManager.FindByNameAsync(user.UserName);
+            if (currUsr != null)
             {
-                return Ok(new
+                var signIn = await _signInManager.CheckPasswordSignInAsync(currUsr, user.Password, true);
+                if (signIn.Succeeded)
                 {
-                    Message = "Login success",
-                    user.UserName
-                });
+                    var tokenStr = _jwtUtils.Generate(currUsr, out SecurityToken token);
+
+                    return Ok(new { Message = "Login success", user.UserName, token = tokenStr, expire = token.ValidTo });
+                }
+                if (signIn.IsLockedOut)
+                {
+                    return BadRequest(new { Message = "User is currently locked out.", LockUntil = currUsr.LockoutEnd });
+                }
             }
-            else if (signIn.IsLockedOut)
-            {
-                return BadRequest(new { Message = "Out of tries, your account is locked" });
-            }
-            else
-            {
-                return BadRequest(new { Message = "Username or password is incorrect" });
-            }
+            return BadRequest(new { Message = "Username or password is incorrect" });
         }
 
         [HttpPost]
@@ -65,11 +69,10 @@ namespace tm_server.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] UserRegister user)
         {
-            var newUser = new AppUser
-            {
-                UserName = user.UserName,
-                Email = user.Email
-            };
+            var currUsr = await _userManager.FindByNameAsync(user.UserName);
+            if (currUsr != null) return BadRequest(new {Message = "Access denied"});
+
+            var newUser = new AppUser { UserName = user.UserName, Email = user.Email };
 
             var result = await _userManager.CreateAsync(newUser, user.Password);
             if (result.Succeeded)

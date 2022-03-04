@@ -8,6 +8,7 @@ using tm_server.Models;
 
 namespace tm_server.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CountriesController : ControllerBase
@@ -21,6 +22,7 @@ namespace tm_server.Controllers
 
         // GET: api/Countries
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Country>>> GetCountries()
         {
             return await _context.Countries.ToListAsync();
@@ -28,6 +30,7 @@ namespace tm_server.Controllers
 
         // GET: api/Countries/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Country>> GetCountry(long id)
         {
             var country = await _context.Countries.FindAsync(id);
@@ -42,7 +45,6 @@ namespace tm_server.Controllers
 
         // PUT: api/Countries/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCountry(long id, Country country)
         {
@@ -74,7 +76,6 @@ namespace tm_server.Controllers
 
         // POST: api/Countries
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Country>> PostCountry(Country country)
         {

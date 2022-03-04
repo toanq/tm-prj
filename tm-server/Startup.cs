@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,10 +12,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.IO;
+using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using tm_server.Middlewares;
 using tm_server.Models;
+using tm_server.Services;
 
 namespace tm_server
 {
@@ -40,26 +40,43 @@ namespace tm_server
             });
             services.AddCors();
 
+
+            services.AddTransient<IJwtUtils, JwtUtils>();
+
             string keyString = Configuration.GetSection("AppSettings").GetValue<string>("SecretKey");
             byte[] key = Encoding.ASCII.GetBytes(keyString);
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options => 
             {
+
                 options.SaveToken = true;
+                var appSettings = Configuration.GetRequiredSection("AppSettings");
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuerSigningKey = true,
+                    ValidateIssuerSigningKey = appSettings.GetValue<bool>("ValidateIssuerSigningKey"),
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateIssuer = appSettings.GetValue<bool>("ValidateIssuer"),
+                    ValidateAudience = appSettings.GetValue<bool>("ValidateAudience")
                 };
             });
 
-            services.AddIdentity<AppUser, IdentityRole>()
+            services.AddAuthorization(options =>
+            {
+                var defaultPolicy = new AuthorizationPolicyBuilder(new[] { JwtBearerDefaults.AuthenticationScheme })
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.DefaultPolicy = defaultPolicy;
+            });
+
+            services.AddIdentity<AppUser, IdentityRole>( options =>
+            {
+                options.Lockout.MaxFailedAccessAttempts = 3;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+            })
                 .AddEntityFrameworkStores<TMContext>()
                 .AddDefaultTokenProviders();
         }
