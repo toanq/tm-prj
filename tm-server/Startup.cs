@@ -70,6 +70,11 @@ namespace tm_server
                     .RequireAuthenticatedUser()
                     .Build();
                 options.DefaultPolicy = defaultPolicy;
+
+                options.AddPolicy("IsAdmin", policy =>
+                {
+                    policy.RequireAssertion(ctx => ctx.User.FindFirstValue(ClaimTypes.Name) == "admin");
+                });
             });
 
             services.AddIdentity<AppUser, IdentityRole>( options =>
@@ -79,6 +84,8 @@ namespace tm_server
             })
                 .AddEntityFrameworkStores<TMContext>()
                 .AddDefaultTokenProviders();
+
+            services.AddScoped<IPermissionManager, PermissionManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -141,16 +148,29 @@ namespace tm_server
 
         private static void AddTestData(TMContext context, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
         {
+            
+            var aPrmstn = new[] {
+                new Permission { Name = "can.create" },
+                new Permission { Name = "can.read" },
+                new Permission { Name = "can.update" },
+                new Permission { Name = "can.detele" }
+            };
+            context.Permissions.AddRange(aPrmstn);
+
             roleManager.CreateAsync(new IdentityRole { Name = "Administrator" }).Wait();
             roleManager.CreateAsync(new IdentityRole { Name = "User" }).Wait();
 
-            var currUsr = new AppUser { UserName = "admin" };
+            var currUsr = new AppUser { UserName = "admin", Email = "admin@localhost"};
             userManager.CreateAsync(currUsr, "Admin@123").Wait();
             userManager.AddToRolesAsync(currUsr, new[] { "Administrator", "User" }).Wait();
+            context.UserPermissions.Add(new UserPermission { UserId = currUsr.Id, PermissionId = aPrmstn[0].Id });
 
-            currUsr = new AppUser { UserName = "user" };
+            currUsr = new AppUser { UserName = "user", Email = "user@localhost"};
             userManager.CreateAsync(currUsr, "User@123").Wait();
             userManager.AddToRolesAsync(currUsr, new[] { "User" }).Wait();
+            context.UserPermissions.Add(new UserPermission { UserId = currUsr.Id, PermissionId = aPrmstn[1].Id });
+
+
 
             context.Countries.AddRange(new[] {
                 new Country { Name = "VietNam" },

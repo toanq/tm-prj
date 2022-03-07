@@ -30,10 +30,15 @@ namespace tm_server.Models
                     entityType.SetTableName(tableName[6..]);
                 }
             }
+
+            builder.Entity<UserPermission>().HasKey(up => new { up.UserId, up.PermissionId });
         }
 
         public DbSet<Country> Countries { get; set; }
         public DbSet<Club> Clubs { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+
+        public DbSet<UserPermission> UserPermissions { get; set; }
     }
 }

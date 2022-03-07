@@ -15,13 +15,13 @@ namespace tm_server.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthenticationController : ControllerBase
     {
         private readonly IJwtUtils _jwtUtils;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
 
-        public AuthController(
+        public AuthenticationController(
             IJwtUtils jwtUtils,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager
@@ -32,21 +32,16 @@ namespace tm_server.Controllers
             _signInManager = signInManager;
         }
 
-        // GET: api/auth
-        [HttpGet]
-        public async Task<IActionResult> GetUserInfo()
-        {
-            var currUsr = await _userManager.GetUserAsync(User);
-            return Ok(currUsr);
-        }
-
         // POST api/auth
 
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> LoginAsync([FromBody] UserLogin user)
         {
-            var currUsr = await _userManager.FindByNameAsync(user.UserName);
+            var currUsr = await _userManager.FindByNameAsync(user.Username);
+            
+            if (currUsr == null) currUsr = await _userManager.FindByEmailAsync(user.Username);
+
             if (currUsr != null)
             {
                 var signIn = await _signInManager.CheckPasswordSignInAsync(currUsr, user.Password, true);
@@ -54,7 +49,7 @@ namespace tm_server.Controllers
                 {
                     var tokenStr = _jwtUtils.Generate(currUsr, out SecurityToken token);
 
-                    return Ok(new { Message = "Login success", user.UserName, token = tokenStr, expire = token.ValidTo });
+                    return Ok(new { currUsr.UserName, currUsr.Email, token = tokenStr, expire = token.ValidTo });
                 }
                 if (signIn.IsLockedOut)
                 {
@@ -62,6 +57,15 @@ namespace tm_server.Controllers
                 }
             }
             return BadRequest(new { Message = "Username or password is incorrect" });
+        }
+
+        // GET: api/auth
+        [HttpGet]
+        [Route("getCurrUsr")]
+        public async Task<IActionResult> GetUserInfo()
+        {
+            var currUsr = await _userManager.GetUserAsync(User);
+            return Ok(currUsr);
         }
 
         [HttpPost]

@@ -6,13 +6,13 @@ namespace tm_server.Models
     public class UserLogin
     {
         [Required]
-        public string UserName { get; set; }
+        public string Username { get; set; }
         [Required]
         public string Password { get; set; }
 
         public override string ToString()
         {
-            return $"usr: {UserName}/ pwd: {Password}";
+            return $"usr: {Username}/ pwd: {Password}";
         }
 
         public void Print() => Console.WriteLine(ToString());
