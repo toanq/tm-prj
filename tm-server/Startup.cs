@@ -16,6 +16,8 @@ using System.Security.Claims;
 using System.Text;
 using tm_server.Middlewares;
 using tm_server.Models;
+using tm_server.Policies.Handlers;
+using tm_server.Policies.Requirements;
 using tm_server.Services;
 
 namespace tm_server
@@ -34,10 +36,7 @@ namespace tm_server
         {
             services.AddDbContext<TMContext>();
             services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "tm_server", Version = "v1" });
-            });
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "tm_server", Version = "v1" }));
             services.AddCors();
 
 
@@ -75,6 +74,11 @@ namespace tm_server
                 {
                     policy.RequireAssertion(ctx => ctx.User.FindFirstValue(ClaimTypes.Name) == "admin");
                 });
+
+                options.AddPolicy("HasEInUsername", policy =>
+                {
+                    policy.AddRequirements(new UserNameMustContainCharacterRequirement('e'));
+                });
             });
 
             services.AddIdentity<AppUser, IdentityRole>( options =>
@@ -86,6 +90,7 @@ namespace tm_server
                 .AddDefaultTokenProviders();
 
             services.AddScoped<IPermissionManager, PermissionManager>();
+            services.AddSingleton<IAuthorizationHandler, UserNameMustContainCharacterHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -164,13 +169,17 @@ namespace tm_server
             userManager.CreateAsync(currUsr, "Admin@123").Wait();
             userManager.AddToRolesAsync(currUsr, new[] { "Administrator", "User" }).Wait();
             context.UserPermissions.Add(new UserPermission { UserId = currUsr.Id, PermissionId = aPrmstn[0].Id });
+            context.UserPermissions.Add(new UserPermission { UserId = currUsr.Id, PermissionId = aPrmstn[1].Id });
 
             currUsr = new AppUser { UserName = "user", Email = "user@localhost"};
             userManager.CreateAsync(currUsr, "User@123").Wait();
             userManager.AddToRolesAsync(currUsr, new[] { "User" }).Wait();
+            context.UserPermissions.Add(new UserPermission { UserId = currUsr.Id, PermissionId = aPrmstn[0].Id });
+
+            currUsr = new AppUser { UserName = "test", Email = "test@localhost" };
+            userManager.CreateAsync(currUsr, "Test@123").Wait();
+            userManager.AddToRolesAsync(currUsr, new[] { "User" }).Wait();
             context.UserPermissions.Add(new UserPermission { UserId = currUsr.Id, PermissionId = aPrmstn[1].Id });
-
-
 
             context.Countries.AddRange(new[] {
                 new Country { Name = "VietNam" },

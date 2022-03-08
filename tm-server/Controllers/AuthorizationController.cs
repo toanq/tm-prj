@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using System.Threading.Tasks;
+using tm_server.Authorizations;
 using tm_server.Models;
 using tm_server.Services;
 
@@ -15,21 +15,15 @@ namespace tm_server.Controllers
     {
         private readonly TMContext _context;
         private readonly UserManager<AppUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly SignInManager<AppUser> _signInManager;
         private readonly IPermissionManager _permissionManager;
         public AuthorizationController(
             TMContext context,
             UserManager<AppUser> userManager,
-            RoleManager<IdentityRole> roleManager,
-            SignInManager<AppUser> signInManager,
             IPermissionManager permissionManager
         )
         {
             _context = context;
             _userManager = userManager;
-            _roleManager = roleManager;
-            _signInManager = signInManager;
             _permissionManager = permissionManager;
 
         }
@@ -52,17 +46,42 @@ namespace tm_server.Controllers
         }
 
         [HttpGet]
-        [Route("test")]
+        [Route("list")]
+        //[Authorize(Policy = "HasEInUsername")]
         public async Task<IActionResult> Test()
         {
-            var currUsr = await _userManager.GetUserAsync(User);
-            if (currUsr == null) return Unauthorized();
+            var currUser = await _userManager.GetUserAsync(User);
+            if (currUser == null) return Unauthorized();
 
-            if (await _permissionManager.ValidateAsync(currUsr, "can.read"))
-            {
-                return Ok(new { Message = "User has can.read permission"});
-            }
-            return Forbid();
+            var permissions = await _permissionManager.GetAllOfAsync(currUser);
+            return Ok(new {permissions});
+        }
+
+        [HttpGet]
+        [Route("createRread")]
+        [AuthPermission(new[] { "can.create", "can.read" })]
+        //[Authorize(Policy = "HasEInUsername")]
+        public async Task<IActionResult> Test2()
+        {
+            var currUser = await _userManager.GetUserAsync(User);
+            if (currUser == null) return Unauthorized();
+
+            var permissions = await _permissionManager.GetAllOfAsync(currUser);
+            return Ok(new { permissions });
+        }
+
+        [HttpGet]
+        [Route("createNread")]
+        [AuthPermission("can.create")]
+        [AuthPermission("can.read")]
+        //[Authorize(Policy = "HasEInUsername")]
+        public async Task<IActionResult> Test3()
+        {
+            var currUser = await _userManager.GetUserAsync(User);
+            if (currUser == null) return Unauthorized();
+
+            var permissions = await _permissionManager.GetAllOfAsync(currUser);
+            return Ok(new { permissions });
         }
     }
 }

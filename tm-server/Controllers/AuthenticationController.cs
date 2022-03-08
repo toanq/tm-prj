@@ -20,16 +20,19 @@ namespace tm_server.Controllers
         private readonly IJwtUtils _jwtUtils;
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly IPermissionManager _permissionManager;
 
         public AuthenticationController(
             IJwtUtils jwtUtils,
             UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager
+            SignInManager<AppUser> signInManager,
+            IPermissionManager permissionManager
         )
         {
             _jwtUtils = jwtUtils;
             _userManager = userManager;
             _signInManager = signInManager;
+            _permissionManager = permissionManager;
         }
 
         // POST api/auth
@@ -39,7 +42,7 @@ namespace tm_server.Controllers
         public async Task<IActionResult> LoginAsync([FromBody] UserLogin user)
         {
             var currUsr = await _userManager.FindByNameAsync(user.Username);
-            
+
             if (currUsr == null) currUsr = await _userManager.FindByEmailAsync(user.Username);
 
             if (currUsr != null)
@@ -48,8 +51,9 @@ namespace tm_server.Controllers
                 if (signIn.Succeeded)
                 {
                     var tokenStr = _jwtUtils.Generate(currUsr, out SecurityToken token);
+                    var permissions = await _permissionManager.GetAllOfAsync(currUsr);
 
-                    return Ok(new { currUsr.UserName, currUsr.Email, token = tokenStr, expire = token.ValidTo });
+                    return Ok(new { currUsr.UserName, currUsr.Email, token = tokenStr, expire = token.ValidTo, permissions});
                 }
                 if (signIn.IsLockedOut)
                 {
@@ -72,9 +76,9 @@ namespace tm_server.Controllers
         [Route("reg")]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] UserRegister user)
-        {
+        {        
             var currUsr = await _userManager.FindByNameAsync(user.UserName);
-            if (currUsr != null) return BadRequest(new {Message = "Access denied"});
+            if (currUsr != null) return BadRequest(new { Message = "Access denied" });
 
             var newUser = new AppUser { UserName = user.UserName, Email = user.Email };
 
