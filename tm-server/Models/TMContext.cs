@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace tm_server.Models
@@ -32,13 +27,18 @@ namespace tm_server.Models
                 var tableName = entityType.GetTableName();
                 if (tableName.Contains("AspNet"))
                 {
-                    entityType.SetTableName(tableName.Substring(6));
+                    entityType.SetTableName(tableName[6..]);
                 }
             }
+
+            builder.Entity<UserPermission>().HasKey(up => new { up.UserId, up.PermissionId });
         }
 
         public DbSet<Country> Countries { get; set; }
         public DbSet<Club> Clubs { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+
+        public DbSet<UserPermission> UserPermissions { get; set; }
     }
 }

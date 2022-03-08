@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace tm_server.Middlewares
@@ -15,6 +16,7 @@ namespace tm_server.Middlewares
         public async Task Invoke(HttpContext context)
         {
             Console.WriteLine($"{context.Request.Method} {context.Request.Path}");
+            context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
             context.Response.Headers.Add("Test-middleware", "success");
             await _next(context);
         }
